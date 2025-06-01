@@ -1,6 +1,6 @@
+# src/pomodoro_widget.py
 import time
 import urwid
-import multiprocessing
 
 
 def pomodoro_worker(conn):
