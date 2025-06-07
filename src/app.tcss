@@ -1,0 +1,34 @@
+Screen {
+
+}
+
+Horizontal{
+  height:8;
+
+  TimeWidget{
+    width: 20%;
+    border: ascii $primary;
+    align:  center middle;
+    border-title-align:center
+  }
+  WeatherWidget{
+    width: 50%;
+    border: ascii $primary;
+    align:  center middle;
+    border-title-align:center
+  }
+  Placeholder{
+    width: 1fr;
+    border: ascii $primary;
+    align:  center middle;
+    border-title-align:center
+  }
+}
+
+
+
+Placeholder {
+  width:1fr;
+  height:1fr
+
+}

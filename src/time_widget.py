@@ -1,43 +1,53 @@
-# src/time_widget.py
 import datetime
-import time
-import urwid
 from .logger import logger
+from textual.widget import Widget
+from textual.widgets import Digits, Label
+from textual.app import ComposeResult
+from datetime import datetime
+from textual.reactive import reactive
+from pytz import timezone
+from itertools import cycle
+from textual.containers import HorizontalGroup, VerticalScroll
+
+timezone_cycle = cycle([
+    "Europe/Paris",
+    "Europe/London"
+])
 
 
-def time_worker(conn):
-    is_uk = False
-    while True:
-        if conn.poll():
-            msg = conn.recv()
-            if msg == 'toggle':
-                is_uk = not is_uk
-        if is_uk:
-            now = datetime.datetime.now(datetime.timezone.utc).astimezone(
-                datetime.timezone(datetime.timedelta(hours=1))
-            ).strftime('%H:%M:%S')
-            conn.send(f'Time (UK): {now}')
-        else:
-            now = datetime.datetime.now().strftime('%H:%M:%S')
-            conn.send(f'Time: {now}')
-        time.sleep(1)
+def title(timezone: str) -> str:
+    """Generate a title based on the timezone."""
+    if timezone == "Europe/Paris":
+        return "Time in France 🇫🇷"
+    elif timezone == "Europe/London":
+        return "Time in UK 🇬🇧"
+    else:
+        return f"Time in {timezone}"
 
 
-class TimeWidget(urwid.Button):
-    def __init__(self, conn):
-        super().__init__('Time: --:--:--')
-        self._w = urwid.Text('Time: --:--:--')
-        self.conn = conn
-        urwid.connect_signal(self, 'click', self.toggle_time_zone)
-        logger.info('TimeWidget initialized')
+class TimeWidget(Widget):
+    """A widget to display the current time in a specified timezone.
+    It allows the user to click and change the timezone displayed.
+    The time updates are done reactively in the main app that sets the time."""
 
-    def toggle_time_zone(self, button):
-        self.conn.send('toggle')
-        logger.info('TimeWidget: Time zone toggled')
+    time: reactive[datetime] = reactive(datetime.now)
 
-    def refresh(self, loop, user_data=None):
-        if self.conn.poll():
-            msg = self.conn.recv()
-            self._w.set_text(msg)
-            # logger.info(f'TimeWidget: Updated display to "{msg}"')
-        loop.set_alarm_in(0.5, self.refresh)
+    def __init__(self, timezone: str) -> None:
+        self.timezone = timezone
+        self.BORDER_TITLE = title(self.timezone)
+        super().__init__()
+
+    def on_click(self) -> None:
+        """Handle click events to change the timezone."""
+        logger.debug(
+            f"Clicked on TimeWidget, changing timezone from {self.timezone}")
+        self.timezone = next(timezone_cycle)
+        self.query_one(Label).update(title(self.timezone))
+        self.watch_time(self.time)
+
+    def compose(self) -> ComposeResult:
+        yield Digits("test")
+
+    def watch_time(self, time: datetime) -> None:
+        localized_time = time.astimezone(timezone(self.timezone))
+        self.query_one(Digits).update(localized_time.strftime("%H:%M:%S"))

@@ -1,11 +1,19 @@
 import logging
 import os
+from textual.logging import TextualHandler
 
 LOG_PATH = os.path.join(os.path.dirname(
     os.path.dirname(__file__)), 'dashboard.log')
 
+logging.basicConfig(
+    level="NOTSET",
+    handlers=[TextualHandler()],
+)
+
+
 logger = logging.getLogger('dashboard')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+logger.handlers.append(TextualHandler())
 
 if not logger.handlers:
     file_handler = logging.FileHandler(LOG_PATH)

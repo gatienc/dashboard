@@ -1,6 +1,8 @@
 # src/pomodoro_widget.py
 import time
-import urwid
+from textual.app import App, ComposeResult
+from textual.containers import HorizontalGroup, VerticalScroll
+from textual.widgets import Button, Digits, Footer, Header
 
 
 def pomodoro_worker(conn):
@@ -53,18 +55,13 @@ def pomodoro_worker(conn):
         time.sleep(1)
 
 
-class PomodoroWidget(urwid.Button):
-    def __init__(self, conn):
-        super().__init__('Pomodoro: 25:00 [Ready]')
-        self._w = urwid.Text('Pomodoro: 25:00 [Ready]')
-        self.conn = conn
-        urwid.connect_signal(self, 'click', self.on_click)
+class TimeDisplay(Digits):
+    """A widget to display elapsed time."""
 
-    def on_click(self, button):
-        self.conn.send('start')
 
-    def refresh(self, loop, user_data=None):
-        if self.conn.poll():
-            msg = self.conn.recv()
-            self._w.set_text(msg)
-        loop.set_alarm_in(1, self.refresh)
+class PomodoroWidget(HorizontalGroup):
+    def compose(self) -> ComposeResult:
+        yield Button('Start', id='start_button', variant='success')
+        yield Button("Stop", id="stop", variant="error")
+        yield Button("Reset", id="reset")
+        yield TimeDisplay("00:00:00.00")
