@@ -1,31 +1,41 @@
 Screen {
 
 }
+DashboardScreen{
+  Horizontal{
+    height:7;
 
-Horizontal{
-  height:8;
-
-  TimeWidget{
-    width: 20%;
-    border: ascii $primary;
-    align:  center middle;
-    border-title-align:center
-  }
-  WeatherWidget{
-    width: 50%;
-    border: ascii $primary;
-    align:  center middle;
-    border-title-align:center
-  }
-  Placeholder{
-    width: 1fr;
-    border: ascii $primary;
-    align:  center middle;
-    border-title-align:center
+    TimeWidget{
+      width: 20%;
+      border: ascii $primary;
+      align:  center middle;
+      border-title-align:center
+    }
+    WeatherWidget{
+      width: 30%;
+      border: ascii $primary;
+      align:  center middle;
+      border-title-align:center
+    }
+    Placeholder{
+      width: 1fr;
+      border: ascii $primary;
+      align:  center middle;
+      border-title-align:center
+    }
   }
 }
-
-
+WeatherScreen {
+  border: ascii $primary;
+  border-title-align:center;
+  RichLog {
+    width:130;
+  }
+  Button{
+    color: white;
+    align:center middle;
+  }
+}
 
 Placeholder {
   width:1fr;

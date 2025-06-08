@@ -1,33 +1,36 @@
 import datetime
 from .logger import logger
 from textual.widget import Widget
-from textual.widgets import Label, Log, Static
+from textual.widgets import Label, Log, Static, Markdown, TextArea
 from textual.app import ComposeResult
 from datetime import datetime
 from textual.reactive import reactive
 from itertools import cycle
 import requests
 from textual.events import MouseEvent
+import json
+from rich.text import Text
 
 DEFAULT_CITY = "Roubaix"
 
 
-def get_weather(city: str = DEFAULT_CITY) -> str:
+def get_weather(city: str = DEFAULT_CITY) -> str | None:
     """Fetch the weather data from wttr.in for Roubaix.
 
     """
     try:
         logger.info(
-            f'Fetching weather data with url : https://wttr.in/{city}?0Q&lang=fr')
-        response = requests.get(f'https://wttr.in/{city}?0Q&lang=fr')
+            f'Fetching weather data with url : https://wttr.in/{city}?0Q&lang=fr&format=j1')
+        response = requests.get(
+            f'https://wttr.in/{city}?0Q&lang=fr')
         if response.status_code == 200:
-            return response.text.strip()
+            logger.info(response)
+            return response.text
         else:
             logger.error(
                 f'Error fetching weather data status code: {response.status_code}')
-            return f'Error fetching data, status code: {response.status_code}'
-    except requests.RequestException:
-        return 'Error fetching data'
+    except requests.RequestException as e:
+        logger.error(e)
 
 
 def get_city(default_city: str = DEFAULT_CITY) -> str:
@@ -47,51 +50,48 @@ def get_city(default_city: str = DEFAULT_CITY) -> str:
         return default_city
 
 
+def to_camel_case(text):
+    # Split the text into words
+    words = text.split()
+
+    # Capitalize each word
+    capitalized_words = [word.capitalize() for word in words]
+
+    # Join the words back into a single string
+    camel_case_text = ''.join(capitalized_words)
+
+    return camel_case_text
+
+
 class WeatherWidget(Widget):
     """A widget to display the current weather"""
     time: reactive[datetime] = reactive(datetime.now)
 
     def __init__(self) -> None:
         self.city = get_city()
+        self.BORDER_TITLE = f"Weather in {self.city}"
+
         super().__init__()
 
     def update_weather(self, weather_info: str) -> None:
         """Update the weather information displayed in the widget."""
         logger.debug(f"Updating weather info: {weather_info}")
         weather_info = get_weather(self.city)
-        if weather_info.startswith('Error'):
-            logger.error(f'WeatherWidget: {weather_info}')
-        else:
-            self.query_one(Label).update(weather_info)
-
-    # def on_click(self, chain: MouseEvent) -> None:
-    #     """Handle click events to increase the cycle of weather formats."""
-    #     self.format = next(self.format_cycle)
-    #     weather_info = get_weather(self.format, self.city)
-    #     if weather_info.startswith('Error'):
-    #         logger.error(f'WeatherWidget: {weather_info}')
-    #     else:
-    #         self.query_one("#weather_info", Static).update(weather_info)
-    #         logger.info(f'WeatherWidget: {weather_info}')
+        if weather_info:
+            self.query_one(Static).update(weather_info)
 
     def compose(self) -> ComposeResult:
         logger.debug("Composing WeatherWidget")
         weather_info = get_weather(self.city)
 
-        if weather_info.startswith('Error'):
-            logger.error(f'WeatherWidget: {weather_info}')
-            weather_info = "Error fetching weather data"
-        else:
-            yield Static(weather_info, id="weather_info", markup=False)
+        if weather_info:
+            yield Static(Text.from_ansi(weather_info))
 
     def watch_time(self, time: datetime) -> None:
         # update only once an hour
-
         if time.minute == 0 and time.second == 0:
             logger.debug(
                 f"Updating weather at {time}")
-            weather_info = get_weather(1)
-            if weather_info.startswith('Error'):
-                logger.error(f'WeatherWidget: {weather_info}')
-            else:
-                self.query_one("#weather_info", Static).update(weather_info)
+            weather_info = get_weather(self.city)
+            if weather_info:
+                self.query_one(Static).update(weather_info)

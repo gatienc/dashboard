@@ -42,7 +42,7 @@ class TimeWidget(Widget):
         logger.debug(
             f"Clicked on TimeWidget, changing timezone from {self.timezone}")
         self.timezone = next(timezone_cycle)
-        self.query_one(Label).update(title(self.timezone))
+        self.border_title = title(self.timezone)
         self.watch_time(self.time)
 
     def compose(self) -> ComposeResult:
