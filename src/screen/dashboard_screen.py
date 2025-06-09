@@ -5,7 +5,7 @@ from textual.widgets import Footer, Placeholder
 from src.logger import logger
 from textual.reactive import reactive
 from datetime import datetime
-from src.widgets import TimeWidget, WeatherWidget
+from src.widgets import TimeWidget, WeatherWidget, PomodoroWidget
 
 
 class DashboardScreen(Screen):
@@ -19,7 +19,8 @@ class DashboardScreen(Screen):
             ),
             WeatherWidget().data_bind(
                 time=DashboardScreen.time),
-            Placeholder()
+            PomodoroWidget().data_bind(
+                time=DashboardScreen.time),
         )
         yield Placeholder()
         yield Footer()

@@ -1,21 +1,38 @@
-Screen {
-
-}
+# Todo: fix css inside widget to truly have 
 DashboardScreen{
   Horizontal{
     height:7;
 
     TimeWidget{
-      width: 20%;
+      width: 2fr;
       border: ascii $primary;
       align:  center middle;
-      border-title-align:center
+      content-align: center middle;
+      border-title-align: center;
     }
     WeatherWidget{
-      width: 30%;
+      width: 3fr;
       border: ascii $primary;
       align:  center middle;
-      border-title-align:center
+      border-title-align: center
+    }
+    PomodoroWidget{
+      width:4fr;
+      border: ascii $primary;
+      align:  center middle;
+      border-title-align:center;
+
+      Bar > .bar--indeterminate {
+        color: $primary;
+        background: $secondary;
+      }
+      Bar > .bar--bar {
+          color: $primary;
+          background: $primary 30%;
+      }
+      Bar > .bar--complete {
+          color: $error;
+      }
     }
     Placeholder{
       width: 1fr;

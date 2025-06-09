@@ -7,13 +7,13 @@ LOG_PATH = os.path.join(os.path.dirname(
 
 logging.basicConfig(
     level="NOTSET",
-    handlers=[TextualHandler()],
 )
 
 
 logger = logging.getLogger('dashboard')
 logger.setLevel(logging.DEBUG)
-logger.handlers.append(TextualHandler())
+# logger.handlers.append(TextualHandler())
+logger.propagate = False
 
 if not logger.handlers:
     file_handler = logging.FileHandler(LOG_PATH)
