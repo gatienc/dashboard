@@ -1,5 +1,5 @@
 import datetime
-from .logger import logger
+from src.logger import logger
 from textual.widget import Widget
 from textual.widgets import Label, Log, Static, Markdown, TextArea
 from textual.app import ComposeResult
@@ -10,44 +10,7 @@ import requests
 from textual.events import MouseEvent
 import json
 from rich.text import Text
-
-DEFAULT_CITY = "Roubaix"
-
-
-def get_weather(city: str = DEFAULT_CITY) -> str | None:
-    """Fetch the weather data from wttr.in for Roubaix.
-
-    """
-    try:
-        logger.info(
-            f'Fetching weather data with url : https://wttr.in/{city}?0Q&lang=fr&format=j1')
-        response = requests.get(
-            f'https://wttr.in/{city}?0Q&lang=fr')
-        if response.status_code == 200:
-            logger.info(response)
-            return response.text
-        else:
-            logger.error(
-                f'Error fetching weather data status code: {response.status_code}')
-    except requests.RequestException as e:
-        logger.error(e)
-
-
-def get_city(default_city: str = DEFAULT_CITY) -> str:
-    """Return the city name for the current position.
-    Returns:
-        str: The city name or default_city if it cannot be determined.
-    """
-    try:
-        response = requests.get('https://ipapi.co/json/')
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('city')
-        else:
-            return default_city
-    except Exception as e:
-        logger.error(f"Error fetching city name: {e}")
-        return default_city
+from src.utils import get_city, get_weather
 
 
 def to_camel_case(text):

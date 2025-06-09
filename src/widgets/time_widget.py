@@ -1,5 +1,5 @@
 import datetime
-from .logger import logger
+from src.logger import logger
 from textual.widget import Widget
 from textual.widgets import Digits, Label
 from textual.app import ComposeResult
