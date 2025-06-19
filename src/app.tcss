@@ -1,4 +1,12 @@
 # Todo: fix css inside widget to truly have 
+.center{
+  width:auto;
+}
+.left-sidebar {
+  dock: left;
+  width: auto;
+  height: auto;
+}
 DashboardScreen{
 
   layout: grid;
@@ -9,8 +17,35 @@ DashboardScreen{
   ObsidianWidget{
     border: ascii $primary;
     border-title-align: center;
-    row-span: 4;
+    row-span: 5;
     column-span: 3;
+
+    layout: grid;
+    grid-size: 4 6;
+    grid-rows: 1fr;
+    grid-columns: 1fr;
+
+    DailyStats{
+      border: round $secondary;
+      row-span: 2;
+      column-span: 1;
+    }
+    DailyCalendar{
+      border: round $secondary;
+      width:35;
+      height:auto;
+      row-span: 4;
+    }
+
+    SelectionList{
+    row-span: 6;
+    column-span: 3;
+    }
+
+    Placeholder{
+      width:1fr;
+      height: 100%;
+    }
     }
   TimeWidget{
       width: 2fr;
@@ -25,7 +60,7 @@ DashboardScreen{
       align:  center middle;
       border-title-align: center
     }
-    PomodoroWidget{
+  PomodoroWidget{
       width:4fr;
       border: ascii $primary;
       align:  center middle;
@@ -43,28 +78,17 @@ DashboardScreen{
           color: $error;
       }
     }
-    Placeholder{
-      width: 1fr;
-      border: ascii $primary;
-      align:  center middle;
-      border-title-align:center
-    }
   }
 
 WeatherScreen {
+  Horizontal {
   border: ascii $primary;
   border-title-align:center;
   RichLog {
-    width:130;
+    width:128;
   }
   Button{
-    color: white;
     align:center middle;
   }
 }
-
-Placeholder {
-  width:1fr;
-  height:1fr
-
 }

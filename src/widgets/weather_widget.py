@@ -34,7 +34,7 @@ class WeatherWidget(Widget):
         weather_info = get_weather(self.city)
 
         if weather_info:
-            yield Static(Text.from_ansi(weather_info))
+            yield Static(Text.from_ansi(weather_info), classes="center")
 
     def watch_time(self, time: datetime) -> None:
         # update only once an hour

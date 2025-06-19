@@ -59,9 +59,9 @@ class PomodoroWidget(Widget):
             "#cc6666",
             "#0099cc",
         )
-        yield Vertical(
-            Digits("25:00"),
-            ProgressBar(gradient=gradient, show_eta=False)
+        yield Center(
+            Digits("    25:00", classes="center"),
+            ProgressBar(classes="center", gradient=gradient, show_eta=False)
         )
 
     def on_click(self) -> None:
@@ -102,7 +102,7 @@ class PomodoroWidget(Widget):
             self.target_count = WORK_DURATION if self.work_mode else BREAK_DURATION
             self.query_one(ProgressBar).update(
                 total=self.target_count, progress=0)
-            self.query_one(Digits).update(count_to_time(
+            self.query_one(Digits).update("    " + count_to_time(
                 self.target_count))
 
             self.progress_timer.resume()
@@ -110,7 +110,7 @@ class PomodoroWidget(Widget):
         else:
             self.query_one(ProgressBar).advance(1)
             self.query_one(Digits).update(
-                count_to_time(self.target_count-self.count))
+                "    " + count_to_time(self.target_count-self.count))
 
     def action_start(self, target_time) -> None:
         """Start the progress tracking."""

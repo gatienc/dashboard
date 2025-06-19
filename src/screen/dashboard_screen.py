@@ -1,7 +1,6 @@
 
 from textual.app import ComposeResult, Screen
-from textual.containers import Horizontal
-from textual.widgets import Footer, Placeholder
+from textual.widgets import Footer
 from src.logger import logger
 from textual.reactive import reactive
 from datetime import datetime
@@ -13,11 +12,11 @@ class DashboardScreen(Screen):
 
     def compose(self) -> ComposeResult:
         logger.debug("Composing DashboardApp")
+        yield WeatherWidget().data_bind(
+            time=DashboardScreen.time)
         yield TimeWidget("Europe/Paris").data_bind(
             time=DashboardScreen.time
         )
-        yield WeatherWidget().data_bind(
-            time=DashboardScreen.time)
         yield PomodoroWidget().data_bind(
             time=DashboardScreen.time)
         yield ObsidianWidget().data_bind(time=DashboardScreen.time)
