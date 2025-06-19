@@ -10,20 +10,7 @@ import requests
 from textual.events import MouseEvent
 import json
 from rich.text import Text
-from src.utils import get_city, get_weather
-
-
-def to_camel_case(text):
-    # Split the text into words
-    words = text.split()
-
-    # Capitalize each word
-    capitalized_words = [word.capitalize() for word in words]
-
-    # Join the words back into a single string
-    camel_case_text = ''.join(capitalized_words)
-
-    return camel_case_text
+from src.utils import get_city, get_weather, to_camel_case
 
 
 class WeatherWidget(Widget):
@@ -36,12 +23,11 @@ class WeatherWidget(Widget):
 
         super().__init__()
 
-    def update_weather(self, weather_info: str) -> None:
+    def update_weather(self) -> None:
         """Update the weather information displayed in the widget."""
-        logger.debug(f"Updating weather info: {weather_info}")
         weather_info = get_weather(self.city)
         if weather_info:
-            self.query_one(Static).update(weather_info)
+            self.query_one(Static).update(Text.from_ansi(weather_info))
 
     def compose(self) -> ComposeResult:
         logger.debug("Composing WeatherWidget")
@@ -55,6 +41,4 @@ class WeatherWidget(Widget):
         if time.minute == 0 and time.second == 0:
             logger.debug(
                 f"Updating weather at {time}")
-            weather_info = get_weather(self.city)
-            if weather_info:
-                self.query_one(Static).update(weather_info)
+            self.update_weather()

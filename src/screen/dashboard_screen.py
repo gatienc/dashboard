@@ -5,7 +5,7 @@ from textual.widgets import Footer, Placeholder
 from src.logger import logger
 from textual.reactive import reactive
 from datetime import datetime
-from src.widgets import TimeWidget, WeatherWidget, PomodoroWidget
+from src.widgets import TimeWidget, WeatherWidget, PomodoroWidget, ObsidianWidget
 
 
 class DashboardScreen(Screen):
@@ -22,7 +22,8 @@ class DashboardScreen(Screen):
             PomodoroWidget().data_bind(
                 time=DashboardScreen.time),
         )
-        yield Placeholder()
+        yield ObsidianWidget().data_bind(time=DashboardScreen.time)
+
         yield Footer()
 
     def update_time(self) -> None:

@@ -7,7 +7,6 @@ from datetime import datetime
 from textual.reactive import reactive
 from pytz import timezone
 from itertools import cycle
-from textual.containers import HorizontalGroup, VerticalScroll
 
 timezone_cycle = cycle([
     "Europe/Paris",
@@ -46,7 +45,7 @@ class TimeWidget(Widget):
         self.watch_time(self.time)
 
     def compose(self) -> ComposeResult:
-        yield Digits("test")
+        yield Digits("test", classes="time_digits")
 
     def watch_time(self, time: datetime) -> None:
         localized_time = time.astimezone(timezone(self.timezone))

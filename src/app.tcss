@@ -1,5 +1,9 @@
 # Todo: fix css inside widget to truly have 
 DashboardScreen{
+  ObsidianWidget{
+    border: ascii $primary;
+    border-title-align: center;
+    }
   Horizontal{
     height:7;
 
