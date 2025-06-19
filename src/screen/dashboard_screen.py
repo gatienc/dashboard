@@ -13,15 +13,13 @@ class DashboardScreen(Screen):
 
     def compose(self) -> ComposeResult:
         logger.debug("Composing DashboardApp")
-        yield Horizontal(
-            TimeWidget("Europe/Paris").data_bind(
-                time=DashboardScreen.time
-            ),
-            WeatherWidget().data_bind(
-                time=DashboardScreen.time),
-            PomodoroWidget().data_bind(
-                time=DashboardScreen.time),
+        yield TimeWidget("Europe/Paris").data_bind(
+            time=DashboardScreen.time
         )
+        yield WeatherWidget().data_bind(
+            time=DashboardScreen.time)
+        yield PomodoroWidget().data_bind(
+            time=DashboardScreen.time)
         yield ObsidianWidget().data_bind(time=DashboardScreen.time)
 
         yield Footer()

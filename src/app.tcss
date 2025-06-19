@@ -1,20 +1,25 @@
 # Todo: fix css inside widget to truly have 
 DashboardScreen{
+
+  layout: grid;
+  grid-size: 3 4;
+  grid-rows: 1fr;
+  grid-columns: 1fr;
+
   ObsidianWidget{
     border: ascii $primary;
     border-title-align: center;
+    row-span: 4;
+    column-span: 3;
     }
-  Horizontal{
-    height:7;
-
-    TimeWidget{
+  TimeWidget{
       width: 2fr;
       border: ascii $primary;
       align:  center middle;
       content-align: center middle;
       border-title-align: center;
     }
-    WeatherWidget{
+  WeatherWidget{
       width: 3fr;
       border: ascii $primary;
       align:  center middle;
@@ -45,7 +50,7 @@ DashboardScreen{
       border-title-align:center
     }
   }
-}
+
 WeatherScreen {
   border: ascii $primary;
   border-title-align:center;
