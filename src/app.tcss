@@ -21,13 +21,13 @@ DashboardScreen{
     column-span: 3;
 
     layout: grid;
-    grid-size: 4 6;
+    grid-size: 4 7;
     grid-rows: 1fr;
     grid-columns: 1fr;
 
     DailyStats{
       border: round $secondary;
-      row-span: 2;
+      row-span: 3;
       column-span: 1;
     }
     DailyCalendar{
@@ -38,10 +38,14 @@ DashboardScreen{
     }
 
     SelectionList{
-    row-span: 6;
-    column-span: 3;
+      border: round $secondary;
+      background: $background;
+      row-span: 3;
+      column-span: 6;
     }
-
+    SelectionList:focus {
+      background: $background 0%;
+    }
     Placeholder{
       width:1fr;
       height: 100%;

@@ -10,7 +10,7 @@ import requests
 from textual.events import MouseEvent
 import json
 from rich.text import Text
-from src.utils import get_city, get_weather, to_camel_case
+from src.utils import get_city, get_weather
 
 
 class WeatherWidget(Widget):
@@ -30,11 +30,11 @@ class WeatherWidget(Widget):
             self.query_one(Static).update(Text.from_ansi(weather_info))
 
     def compose(self) -> ComposeResult:
-        logger.debug("Composing WeatherWidget")
-        weather_info = get_weather(self.city)
 
-        if weather_info:
-            yield Static(Text.from_ansi(weather_info), classes="center")
+        yield Static("Loading weather info", classes="center")
+
+    def on_mount(self) -> None:
+        self.update_weather()
 
     def watch_time(self, time: datetime) -> None:
         # update only once an hour

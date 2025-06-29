@@ -1,4 +1,4 @@
-from src.screen import WeatherScreen, DashboardScreen
+from src.screen import WeatherScreen, DashboardScreen, FunTermScreen
 from textual.app import App
 
 
@@ -8,10 +8,13 @@ class DashboardApp(App):
     BINDINGS = [
         ("🏠️", "switch_mode('dashboard')", "Dashboard"),
         ("☁️", "switch_mode('weather')", "Weather"),
+        # ("✨", "switch_mode('fun')", "Fun")
+
     ]
     MODES = {
         "dashboard": DashboardScreen,
         "weather": WeatherScreen,
+        # "fun": FunTermScreen
     }
 
     def on_mount(self) -> None:

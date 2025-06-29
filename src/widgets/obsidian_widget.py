@@ -1,15 +1,12 @@
-import datetime
 from src.logger import logger
+from src.utils import API_URL, API_KEY
 from textual.widget import Widget
-from textual.widgets import SelectionList, Placeholder, Static
-from textual.containers import Horizontal
-from textual.widgets.selection_list import Selection
+from textual.widgets import SelectionList, Static
 from textual.app import ComposeResult
 from datetime import datetime
 from textual.reactive import reactive
 from textual import on
 import requests
-
 
 DEFAULT_CALENDAR = """
 | 08:00| Morning Meeting |
@@ -21,172 +18,8 @@ DEFAULT_CALENDAR = """
 | 17:30| Wrap-up          |
 """
 
-DEFAULT_DATA = """
----
-date: 2025-06-19T15:58
-tags:
-    - Daily
-cssclasses:
-    - daily
-    - friday
-wake_early: false
-trained: false
-stretched: false
-anki: false
-city: undefined
-emoji:
----
-**Friday, June 20th, 2025**
-#### Tracker
 
-😀 `INPUT[text:emoji]`
-😴 : `INPUT[time:sleepin]`
-⏰ : `INPUT[time():sleepout]`
-Entrainement ? `INPUT[toggle:trained]`
-Etirement ? `INPUT[toggle:stretched]`
-Médité ? `INPUT[toggle:meditate]`
-Révisé Anki ? `INPUT[toggle:anki]`
-Ville actuel : `INPUT[suggester(option(Roubaix),option(Karlsruhe),option(Strasbourg),option(Londres),allowOther(True)):city]`
-#### Journal
-
-#### Things consumed
-
-#### Daily Todo
-- [ ] mail TalkTalk
-
-
-- [ ] Faire Widget obsidian pour dashboard
-
-Apprentissage :
-
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-- [ ] Relire cours apprentissage de formes
-
-- [ ] [[cours wekeo]]
-
-- [ ] apprendre les différents satellites disponibles et leurs spécificités et utilités
-
-- [ ] ficher hydroponies et ses variantes
-
-- [ ] lire grand papier et ficher
-
-- [ ] lire 100 page ai book
-
-
-"""
-
-
-def data_to_daily_info(data: str) -> dict:
-    """
-    Parses the provided data string and returns a dictionary with the daily information.
-    The data should be in a specific format, including date, tags, cssclasses, and various toggles.
-    """
-    # cut the data lines between the "---" lines
-    lines = data.splitlines()
-    daily_info = {}
-    try:
-        start = lines.index("---") + 1
-        end = lines.index("---", start)
-    except ValueError:
-        return {}
-    # Is there something between #### Journal and #### Things consumed
-    if "#### Journal" in lines and "#### Things consumed" in lines:
-        journal_start = lines.index("#### Journal") + 1
-        journal_end = lines.index("#### Things consumed", journal_start)
-        daily_info["journal"] = "\n".join(
-            lines[journal_start:journal_end]).strip()
-        daily_info["journal_wrote"] = bool(daily_info["journal"].strip())
-
-    properties_lines = lines[start:end]
-    for line in properties_lines:
-        if line.startswith("date:"):
-            daily_info["date"] = line.split(":", 1)[1].strip()
-        elif line.startswith(("tags:", "cssclasses:")):
-            continue
-        else:
-            if len(line.split(":", 1)) < 2:
-                key = line.replace(":", "")
-                value = ""
-            else:
-                key, value = line.split(":", 1)
-            key = key.strip()
-            value = value.strip()
-            if key in ["wake_early", "trained", "stretched", "anki"]:
-                daily_info[key] = value.lower() == "true"
-            elif key == "city":
-                daily_info[key] = value if value != "undefined" else None
-            else:
-                daily_info[key] = value
-
-    return daily_info
-
-
-def data_to_todo_list(data: str) -> list[(str, int, bool)]:
+def todo_list_formatting(daily_todo: str) -> list[(str, int, bool)]:
     """
     Gets the Todo list section from the provided data string and returns a list of tuples formatted as (text, index, done).
     You can use this to populate a SelectionList widget in Textual.
@@ -194,50 +27,47 @@ def data_to_todo_list(data: str) -> list[(str, int, bool)]:
 
     selection_list = []
     count = 0
-    # Only process lines after "#### Daily Todo"
-    lines = data.splitlines()
-    try:
-        start = lines.index("#### Daily Todo") + 1
-    except ValueError:
-        return selection_list  # "#### Daily Todo" not found
 
-    for line in lines[start:]:
-        stripped = line.strip()
-        if not stripped:
+    for line in daily_todo.splitlines():
+        if not line:
             continue
-        if stripped.startswith("- ["):
-            done = stripped.startswith("- [x]")
+        if line.startswith("- ["):
+            done = line.startswith("- [x]")
             # Remove "- [ ]" or "- [x]" and any extra brackets
-            text = stripped[6:].replace("]", "").replace("[", "").strip()
+            text = line[6:].replace("]", "").replace("[", "").strip()
             selection_list.append((text, count, done))
             count += 1
         # Stop if we reach a new section (e.g., a line starting with "####")
-        elif stripped.startswith("####"):
+        elif line.startswith("####"):
             break
+    logger.debug(f"Converted data to todo list: {selection_list}")
     return selection_list
 
 
 class DailyStats(Widget):
     """A widget to display the daily stats in a static format."""
 
-    def __init__(self, data: str) -> None:
+    def __init__(self, routine_dict: dict) -> None:
         super().__init__()
-        self.data = data
-        self.text = self.get_text()
+        self.routine_dict = routine_dict
+        self.text = self.get_text(routine_dict)
         self.border_title = "Daily Stats"
 
-    def get_text(self) -> None:
-        daily_info = data_to_daily_info(self.data)
-        return (f"Journal Wrote: {'✅' if daily_info.get('journal_wrote', False) else '❌'}\n" +
-                f"Wake Early:    {'✅' if daily_info.get('wake_early', False) else '❌'}\n" +
-                f"Trained:       {'✅' if daily_info.get('trained', False) else '❌'}\n" +
-                f"Stretched:     {'✅' if daily_info.get('stretched', False) else '❌'}\n" +
-                f"Anki:          {'✅' if daily_info.get('anki', False) else '❌'}")
-        # f"City:          {daily_info.get('city', 'Unknown')}")
+    def get_text(self, routine_dict: dict) -> None:
+        logger.debug(routine_dict)
+        if "error" in routine_dict:
+            return "Error fetching data."
+        return (
+            f"Journal Wrote: {'✅' if routine_dict.get('journal_wrote', False) else '❌'}\n" +
+            f"Wake Early:    {'✅' if routine_dict.get('wake_early', False) else '❌'}\n" +
+            f"Trained:       {'✅' if routine_dict.get('trained', False) else '❌'}\n" +
+            f"Stretched:     {'✅' if routine_dict.get('stretched', False) else '❌'}\n" +
+            f"Anki:          {'✅' if routine_dict.get('anki', False) else '❌'}\n" +
+            f"City:          {routine_dict.get('city', 'Unknown')}")
 
-    def update_data(self, data: str) -> None:
-        self.data = data
-        self.text = self.get_text()
+    def update_data(self, routine_dict: str) -> None:
+        self.routine_dict = routine_dict
+        self.text = self.get_text(routine_dict)
         self.query_one(Static).update(self.text)
 
     def compose(self):
@@ -268,55 +98,148 @@ class ObsidianWidget(Widget):
 
     time: reactive[datetime] = reactive(datetime.now)
 
-    def __init__(self, data: str = DEFAULT_DATA) -> None:
+    def __init__(self) -> None:
         self.BORDER_TITLE = "Obsidian Dashboard"
-        self.data = data
+        self.data = self._get_data()
+        self.uploading = False  # When data is being uploaded, no new data can be fetched
         super().__init__()
 
-    def _get_data(self) -> str:
+    def _get_data(self) -> dict:
         """Get the data to be displayed in the widget by calling a FastAPI endpoint."""
-        # TODO: rework it
         try:
-            response = requests.get(
-                "https://gatien.chenu.me/api/obsidian/daily")
+            response = requests.get(f"{API_URL}/daily/{datetime.now().strftime('%Y-%m-%d')}",
+                                    headers={"X-API-KEY": API_KEY})
             response.raise_for_status()
-            return response.text
+            logger.debug(
+                f"Fetched data from FastAPI endpoint: {response.text}")
+
+            todo_response = requests.get(f"{API_URL}/to_do_list",
+                                         headers={"X-API-KEY": API_KEY})
+            todo_response.raise_for_status()
+            # add merged data to response
+            response_data = response.json()
+            todo_data = todo_response.json()
+            response_data["todo"] = todo_data.get("todo_list", "")
+            return response_data
         except requests.RequestException as e:
             logger.error(f"Failed to fetch data from FastAPI endpoint: {e}")
-            return self.data
+            return {"error": str(e)}
 
-    def update_data(self, new_data: str) -> None:
+    def update_data(self, new_data: dict) -> None:
         """Update the data and refresh the widget's content."""
+        if self.uploading:
+            logger.warning(
+                "Data is currently being uploaded, skipping update.")
+            return
         self.data = new_data
+        if "error" in self.data:
+            return
         # Update SelectionList
-        todo_list = self.query_one("#todo_list", SelectionList)
-        todo_list.clear()
-        for item in data_to_todo_list(self.data):
-            todo_list.add_option(*item)
+        daily_todo_list = self.query_one("#daily_todo_list", SelectionList)
+        daily_todo_list.clear_options()
+        for item in todo_list_formatting(self.data["daily_todo"]):
+            daily_todo_list.add_option(item)
         # Update DailyStats
         daily_stats = self.query_one(DailyStats)
-        daily_stats.update_data(self.data)
-
-    def on_click(self) -> None:
-        pass
+        daily_stats.update_data(self.data["routine"])
 
     def compose(self) -> ComposeResult:
-        yield DailyStats(data=self.data)
-        yield SelectionList[int](*data_to_todo_list(self.data), id="todo_list")
-        yield DailyCalendar(data=DEFAULT_CALENDAR)
+        if "error" in self.data:
+            yield DailyStats(routine_dict={"error": "Error fetching data."})
+            yield SelectionList[int](("Error fetching daily todo list.", 0, False), id="daily_todo_list", compact=True)
+            yield DailyCalendar(data="Error fetching calendar data.")
+            yield SelectionList[int](("Error fetching todo list.", 0, False), id="todo_list", compact=True)
+        else:
+            yield DailyStats(routine_dict=self.data["routine"])
+            yield SelectionList[int](*todo_list_formatting(self.data["daily_todo"]), id="daily_todo_list", compact=True)
+            yield DailyCalendar(data=DEFAULT_CALENDAR)
+            yield SelectionList[int](*todo_list_formatting(self.data["todo"]), id="todo_list", compact=True)
 
-    @on(SelectionList.SelectedChanged)
-    def update_selected_view(self) -> None:
-        logger.debug("Selection changed")
-        selected = self.query_one(SelectionList).selected
-        logger.debug(f"Selected item: {selected}")
+    def _get_new_todo_list(self, id: str) -> str:
+        """Get the current todo list from the SelectionList."""
+        self.uploading = True
+        selected_list = self.query_one(id, SelectionList).selected
+        if id == "#daily_todo_list":
+            key = "daily_todo"
+        elif id == "#todo_list":
+            key = "todo"
+        # loop trough the todo list text and find the selected item
+        selection_list = todo_list_formatting(self.data[key])
+        new_todo = self.data[key].splitlines()
+        current_index = 0
+        for index, line in enumerate(self.data[key].splitlines()):
+            logger.debug(selection_list[current_index][0])
+            line_matching = selection_list[current_index][0] in line.replace(
+                "[", "").replace("]", "")
+
+            if line.startswith("- ["):
+                if line.startswith("- [ ]"):
+                    if line_matching and current_index in selected_list:
+                        new_todo[index] = new_todo[index].replace(
+                            "- [ ]", "- [x]")
+
+                if line.startswith("- [x]"):
+                    if line_matching and current_index not in selected_list:
+                        new_todo[index] = new_todo[index].replace(
+                            "- [x]", "- [ ]")
+                current_index += 1
+
+        return "\n".join(new_todo)
+
+    @on(SelectionList.SelectedChanged, "#daily_todo_list")
+    def upload_daily_todo_list_change(self) -> None:
+        if "error" in self.data:
+            logger.error("No data available to update todo list.")
+            return
+
+        self.data["daily_todo"] = self._get_new_todo_list("#daily_todo_list")
+        self._get_new_todo_list("#daily_todo_list")
+
+        try:
+            response = requests.post(
+                f"{API_URL}/daily/{datetime.now().strftime('%Y-%m-%d')}/update_todo",
+                headers={"X-API-KEY": API_KEY,
+                         "Content-Type": "application/json"},
+                json={"daily_todo": self.data["daily_todo"]},
+            )
+            response.raise_for_status()
+            logger.debug("Todo list updated successfully.")
+        except requests.RequestException as e:
+            logger.error(f"Failed to update todo list: {e}")
+
+        self.uploading = False
+
+    @on(SelectionList.SelectedChanged, "#todo_list")
+    def upload_todo_list_change(self) -> None:
+        if "error" in self.data:
+            logger.error("No data available to update todo list.")
+            return
+
+        self.data["todo"] = self._get_new_todo_list("#todo_list")
+
+        try:
+            response = requests.post(
+                f"{API_URL}/to_do_list/update",
+                headers={"X-API-KEY": API_KEY,
+                         "Content-Type": "application/json"},
+                json={"todo": self.data["todo"]},
+            )
+            response.raise_for_status()
+            logger.debug("Todo list updated successfully.")
+        except requests.RequestException as e:
+            logger.error(f"Failed to update todo list: {e}")
+
+        self.uploading = False
 
     def on_mount(self) -> None:
+        self.query_one("#daily_todo_list",
+                       SelectionList).border_title = "Daily Todo List"
         self.query_one("#todo_list", SelectionList).border_title = "Todo List"
 
     def watch_time(self, time: datetime) -> None:
         """Update the widget's content based on the current time."""
-        # This method can be used to update the widget periodically if needed
-        logger.debug(f"Current time: {time}")
-        # For example, you could refresh the data or update the display based on the time
-        # self.update_data(self.data)  # Uncomment to refresh data every time time changes
+        if time.second % 15 == 0:  # Update every 15 seconds
+            if not self.uploading:
+                logger.debug(f"Updating data at {time}")
+                self.data = self._get_data()
+                self.update_data(self.data)
