@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.widgets import Digits, Label
 from textual.containers import Center
 from datetime import datetime
-from src.logger import logger
+from dashboard.logger import logger
 from textual.widget import Widget
 
 timezone_cycle = cycle([

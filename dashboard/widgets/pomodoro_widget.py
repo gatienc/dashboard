@@ -10,8 +10,8 @@ from textual.widgets import Button, Digits, Footer, Header, ProgressBar
 from textual.timer import Timer
 from textual.reactive import reactive
 from datetime import datetime
-from src.logger import logger
-from src.utils import play_sound
+from dashboard.logger import logger
+from dashboard.utils import play_sound
 from pathlib import Path
 import threading
 

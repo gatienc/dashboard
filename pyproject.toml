@@ -1,17 +1,30 @@
 [project]
 name = "dashboard"
 version = "0.1.0"
-description = "Add your description here"
+description = "CLI dashboard for being cooler"
 readme = "README.md"
-requires-python = ">=3.12"
 dependencies = [
     "dotenv>=0.9.9",
     "pytz>=2025.2",
     "requests>=2.32.4",
     "textual>=3.3.0",
+    "textual-dev>=1.7.0",
     "textual-terminal",
 ]
 
+
 [tool.uv.sources]
 textual-terminal = { git = "https://github.com/sstoops/textual-terminal.git", rev = "patch-1" }
+dashboard = { workspace = true }
 
+[project.scripts]
+dashboard = "dashboard.app:main"
+
+
+[tool.setuptools.package-data]
+"dashboard" = ["app.tcss", "assets/*"]
+
+[dependency-groups]
+dev = [
+    "dashboard",
+]

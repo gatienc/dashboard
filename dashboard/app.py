@@ -1,9 +1,10 @@
-from src.screen import WeatherScreen, DashboardScreen, FunTermScreen
+from dashboard.screen import WeatherScreen, DashboardScreen
 from textual.app import App
+from pathlib import Path
 
 
 class DashboardApp(App):
-    CSS_PATH = "app.tcss"
+    CSS_PATH = Path(__file__).parent / "app.tcss"
 
     BINDINGS = [
         ("🏠️", "switch_mode('dashboard')", "Dashboard"),

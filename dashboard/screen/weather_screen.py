@@ -1,8 +1,8 @@
-from src.utils import get_city, get_weather_report
+from dashboard.utils import get_city, get_weather_report
 from textual.app import ComposeResult, Screen
 from textual.containers import Horizontal
 from textual.widgets import Footer, RichLog, Button
-from src.logger import logger
+from dashboard.logger import logger
 
 from rich.text import Text
 from itertools import cycle

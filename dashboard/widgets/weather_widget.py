@@ -1,5 +1,5 @@
 import datetime
-from src.logger import logger
+from dashboard.logger import logger
 from textual.widget import Widget
 from textual.widgets import Label, Log, Static, Markdown, TextArea
 from textual.app import ComposeResult
@@ -10,7 +10,7 @@ import requests
 from textual.events import MouseEvent
 import json
 from rich.text import Text
-from src.utils import get_city, get_weather
+from dashboard.utils import get_city, get_weather
 
 
 class WeatherWidget(Widget):

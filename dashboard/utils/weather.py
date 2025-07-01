@@ -1,4 +1,4 @@
-from src.logger import logger
+from dashboard.logger import logger
 import requests
 
 DEFAULT_CITY = "Roubaix"

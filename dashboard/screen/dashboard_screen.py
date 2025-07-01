@@ -1,10 +1,10 @@
 
 from textual.app import ComposeResult, Screen
 from textual.widgets import Footer
-from src.logger import logger
+from dashboard.logger import logger
 from textual.reactive import reactive
 from datetime import datetime
-from src.widgets import TimeWidget, WeatherWidget, PomodoroWidget, ObsidianWidget
+from dashboard.widgets import TimeWidget, WeatherWidget, PomodoroWidget, ObsidianWidget
 
 
 class DashboardScreen(Screen):

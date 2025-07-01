@@ -1,7 +1,7 @@
 
 from textual.app import ComposeResult, Screen
 from textual.widgets import Footer
-from src.logger import logger
+from dashboard.logger import logger
 from textual.reactive import reactive
 from datetime import datetime
 from textual_terminal import Terminal

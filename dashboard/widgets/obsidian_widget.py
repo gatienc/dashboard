@@ -1,5 +1,5 @@
-from src.logger import logger
-from src.utils import API_URL, API_KEY
+from dashboard.logger import logger
+from dashboard.utils import API_URL, API_KEY
 from textual.widget import Widget
 from textual.widgets import SelectionList, Static
 from textual.app import ComposeResult
@@ -108,13 +108,15 @@ class ObsidianWidget(Widget):
         """Get the data to be displayed in the widget by calling a FastAPI endpoint."""
         try:
             response = requests.get(f"{API_URL}/daily/{datetime.now().strftime('%Y-%m-%d')}",
-                                    headers={"X-API-KEY": API_KEY})
+                                    # the certificate is self certified
+                                    headers={"X-API-KEY": API_KEY}, verify=False)
             response.raise_for_status()
             logger.debug(
                 f"Fetched data from FastAPI endpoint: {response.text}")
 
             todo_response = requests.get(f"{API_URL}/to_do_list",
-                                         headers={"X-API-KEY": API_KEY})
+                                         # the certificate is self certified
+                                         headers={"X-API-KEY": API_KEY}, verify=False)
             todo_response.raise_for_status()
             # add merged data to response
             response_data = response.json()
@@ -188,6 +190,7 @@ class ObsidianWidget(Widget):
 
     @on(SelectionList.SelectedChanged, "#daily_todo_list")
     def upload_daily_todo_list_change(self) -> None:
+        return  # updating has to be fixed
         if "error" in self.data:
             logger.error("No data available to update todo list.")
             return
@@ -211,6 +214,8 @@ class ObsidianWidget(Widget):
 
     @on(SelectionList.SelectedChanged, "#todo_list")
     def upload_todo_list_change(self) -> None:
+        return  # updating has to be fixed
+
         if "error" in self.data:
             logger.error("No data available to update todo list.")
             return
