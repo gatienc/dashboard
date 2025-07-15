@@ -11,38 +11,49 @@ from itertools import cycle
 class WeatherScreen(Screen):
 
     def __init__(self) -> None:
+        super().__init__()
         self.city = get_city()
         self.version_cycle = cycle([1, 2, 3])
+        self.display_content = ""  # Content to be displayed in RichLog
 
-        self.weather_report = get_weather_report(
-            self.city, next(self.version_cycle))
+        initial_report = get_weather_report(self.city, next(self.version_cycle))
 
-        if self.weather_report:
-            first_line = self.weather_report.splitlines(
-            )[0] if self.weather_report else ""
-            last_line = self.weather_report.splitlines(
-            )[-1] if self.weather_report else ""
-            # Remove the first line from self.weather_report
-            self.weather_report = "\n".join(self.weather_report.splitlines()[
-                1:-1]) if self.weather_report else ""
+        if initial_report:
+            lines = initial_report.splitlines()
+            if len(lines) >= 2:
+                self.BORDER_TITLE = lines[0]
+                self.BORDER_SUBTITLE = Text.from_ansi(lines[-1])
+                self.display_content = "\n".join(lines[1:-1])
+            else:
+                # Handle cases where report is too short, e.g., "Invalid weather API version"
+                self.BORDER_TITLE = "Weather Report"
+                self.BORDER_SUBTITLE = Text.from_ansi("Information available below.")
+                self.display_content = initial_report # Display the full short report
+        else:
+            self.display_content = "Failed to retrieve weather data. Please check your internet connection or try again later."
+            self.BORDER_TITLE = "Weather Data Error"
+            self.BORDER_SUBTITLE = Text.from_ansi("Could not load weather information.")
 
-            logger.debug(first_line)
-            self.BORDER_TITLE = first_line
-            self.BORDER_SUBTITLE = Text.from_ansi(last_line)
-        super().__init__()
 
     def on_button_pressed(self, event) -> None:
         if event.button.id == "version":
             version = next(self.version_cycle)
-            self.weather_report = get_weather_report(self.city, version)
-            if self.weather_report:
-                self.query_one(RichLog).clear().write(
-                    Text.from_ansi(self.weather_report), scroll_end=False)
+            new_report = get_weather_report(self.city, version)
+            rich_log = self.query_one(RichLog)
+            rich_log.clear()
+            if new_report:
+                lines = new_report.splitlines()
+                if len(lines) >= 2:
+                    # Update the content of the RichLog, but not the screen's border title/subtitle
+                    rich_log.write(Text.from_ansi("\n".join(lines[1:-1])), scroll_end=False)
+                else:
+                    rich_log.write(Text.from_ansi(new_report), scroll_end=False)
+            else:
+                rich_log.write("Failed to retrieve weather data. Please check your internet connection or try again later.", scroll_end=False)
 
     def compose(self) -> ComposeResult:
         yield Horizontal(
-            RichLog().write(Text.from_ansi(self.weather_report),
-                            scroll_end=False) if self.weather_report else None,
+            RichLog().write(Text.from_ansi(self.display_content), scroll_end=False),
             Button("Version", id="version")
         )
         yield Footer()

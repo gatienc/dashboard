@@ -4,3 +4,6 @@
 .env
 *.egg-info
 .testvenv
+result
+result-*
+.direnv
