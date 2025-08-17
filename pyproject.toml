@@ -3,6 +3,15 @@ name = "dashboard"
 version = "0.1.0"
 description = "CLI dashboard for being cooler"
 readme = "README.md"
+authors = [
+    {name = "Gatien Chenu", email = "gatien+dev@chenu.me"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.11"
 dependencies = [
     "dotenv>=0.9.9",
     "pytz>=2025.2",
@@ -11,10 +20,13 @@ dependencies = [
     "textual-dev>=1.7.0",
 ]
 
-
 [project.scripts]
 dashboard = "dashboard.app:main"
 
+[project.urls]
+"Homepage" = "https://github.com/gatien/dashboard"
+"Repository" = "https://github.com/gatien/dashboard.git"
+"Bug Tracker" = "https://github.com/gatien/dashboard/issues"
 
 [tool.setuptools.package-data]
 "dashboard" = ["app.tcss", "assets/*"]
@@ -23,3 +35,7 @@ dashboard = "dashboard.app:main"
 dev = [
     "dashboard",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
