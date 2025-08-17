@@ -24,9 +24,8 @@ dependencies = [
 dashboard = "dashboard.app:main"
 
 [project.urls]
-"Homepage" = "https://github.com/gatien/dashboard"
-"Repository" = "https://github.com/gatien/dashboard.git"
-"Bug Tracker" = "https://github.com/gatien/dashboard/issues"
+"Homepage" = "https://github.com/gatienc/dashboard"
+"Repository" = "https://github.com/gatienc/dashboard.git"
 
 [tool.setuptools.package-data]
 "dashboard" = ["app.tcss", "assets/*"]
