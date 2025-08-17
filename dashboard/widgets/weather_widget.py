@@ -10,24 +10,43 @@ import requests
 from textual.events import MouseEvent
 import json
 from rich.text import Text
-from dashboard.utils import get_city, get_weather
+from dashboard.utils import get_city, get_weather, get_minimal_weather
 
 
 class WeatherWidget(Widget):
     """A widget to display the current weather"""
     time: reactive[datetime] = reactive(datetime.now)
 
-    def __init__(self) -> None:
+    def __init__(self, small_screen: bool = False):
         self.city = get_city()
-        self.BORDER_TITLE = f"Weather in {self.city}"
+        self.small_screen = small_screen
+        if not small_screen:
+            self.BORDER_TITLE = f"Weather in {self.city}"
 
         super().__init__()
 
     def update_weather(self) -> None:
         """Update the weather information displayed in the widget."""
-        weather_info = get_weather(self.city)
-        if weather_info:
-            self.query_one(Static).update(Text.from_ansi(weather_info))
+        if self.small_screen:
+            # Use minimal weather data for small screens
+            weather_info = get_minimal_weather(self.city)
+            if weather_info:
+                # Ensure no trailing whitespace in the display
+                clean_weather_info = weather_info.strip()
+                self.query_one(Static).update(
+                    Text.from_ansi(clean_weather_info))
+            else:
+                self.query_one(Static).update("Weather data unavailable")
+        else:
+            # Use full weather data for regular screens
+            weather_info = get_weather(self.city)
+            if weather_info:
+                # Ensure no trailing whitespace in the display
+                clean_weather_info = weather_info.strip()
+                self.query_one(Static).update(
+                    Text.from_ansi(clean_weather_info))
+            else:
+                self.query_one(Static).update("Weather data unavailable")
 
     def compose(self) -> ComposeResult:
 

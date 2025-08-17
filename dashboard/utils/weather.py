@@ -23,6 +23,29 @@ def get_weather_report(city: str, version: int = 1) -> str:
         logger.error(f"Error fetching weather data: {e}")
 
 
+def get_minimal_weather(city: str = DEFAULT_CITY) -> str | None:
+    """Fetch minimal weather data from wttr.in for small screens.
+
+    Returns a simple format with just temperature and condition.
+    """
+    try:
+        logger.info(f'Fetching minimal weather data for {city}')
+        # Use format=3 for minimal output: "Location: condition, temperature"
+        response = requests.get(
+            f'https://wttr.in/{city}?format=3&lang=fr')
+        if response.status_code == 200:
+            weather_text = response.text.strip()
+            logger.info(f"Minimal weather data fetched: {weather_text}")
+            return weather_text
+        else:
+            logger.error(
+                f'Error fetching minimal weather data status code: {response.status_code}')
+            return None
+    except requests.RequestException as e:
+        logger.error(f"Error fetching minimal weather data: {e}")
+        return None
+
+
 def get_weather(city: str = DEFAULT_CITY) -> str | None:
     """Fetch the weather data from wttr.in for Roubaix.
 
@@ -33,8 +56,9 @@ def get_weather(city: str = DEFAULT_CITY) -> str | None:
         response = requests.get(
             f'https://wttr.in/{city}?0Q&lang=fr')
         if response.status_code == 200:
+            weather_text = response.text.strip()
             logger.info(response)
-            return response.text
+            return weather_text
         else:
             logger.error(
                 f'Error fetching weather data status code: {response.status_code}')

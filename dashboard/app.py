@@ -1,6 +1,10 @@
 from dashboard.screen import WeatherScreen, DashboardScreen
+from dashboard.widgets.pomodoro_widget import PomodoroConfigPopup
 from textual.app import App
 from pathlib import Path
+import argparse
+import sys
+from dashboard.logger import logger
 
 
 class DashboardApp(App):
@@ -9,22 +13,37 @@ class DashboardApp(App):
     BINDINGS = [
         ("🏠️", "switch_mode('dashboard')", "Dashboard"),
         ("☁️", "switch_mode('weather')", "Weather"),
-        # ("✨", "switch_mode('fun')", "Fun")
-
     ]
     MODES = {
         "dashboard": DashboardScreen,
         "weather": WeatherScreen,
-        # "fun": FunTermScreen
+        "pomodoro_config": PomodoroConfigPopup,
     }
 
+    def __init__(self, small_screen: bool = False):
+        super().__init__()
+        self.small_screen = small_screen
+        logger.info(
+            f"DashboardApp initialized with small_screen={small_screen}")
+
     def on_mount(self) -> None:
-        self.theme = "dracula"
+        self.theme = "nord"
+        logger.info("DashboardApp mounted, switching to dashboard mode")
         self.switch_mode("dashboard")
 
 
 def main():
-    app = DashboardApp()
+    parser = argparse.ArgumentParser(description="Dashboard CLI")
+    parser.add_argument(
+        "--small-screen",
+        action="store_true",
+        help="Use small screen layout (optimized for Raspberry Pi displays)"
+    )
+
+    args = parser.parse_args()
+    logger.info(f"Starting dashboard with small_screen={args.small_screen}")
+
+    app = DashboardApp(small_screen=args.small_screen)
     app.run()
 
 

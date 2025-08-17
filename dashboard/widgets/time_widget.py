@@ -3,7 +3,7 @@ from pytz import timezone
 from textual.reactive import reactive
 from datetime import datetime
 from textual.app import ComposeResult
-from textual.widgets import Digits, Label
+from textual.widgets import Digits, Label, Static
 from textual.containers import Center
 from datetime import datetime
 from dashboard.logger import logger
@@ -25,6 +25,16 @@ def title(timezone: str) -> str:
         return f"Time in {timezone}"
 
 
+def get_flag(timezone: str) -> str:
+    """Get the flag emoji for a timezone."""
+    if timezone == "Europe/Paris":
+        return "🇫🇷"
+    elif timezone == "Europe/London":
+        return "🇬🇧"
+    else:
+        return "🌍"
+
+
 class TimeWidget(Widget):
     """A widget to display the current time in a specified timezone.
     It allows the user to click and change the timezone displayed.
@@ -32,9 +42,11 @@ class TimeWidget(Widget):
 
     time: reactive[datetime] = reactive(datetime.now)
 
-    def __init__(self, timezone: str) -> None:
+    def __init__(self, timezone: str, small_screen: bool = False):
         self.timezone = timezone
-        self.BORDER_TITLE = title(self.timezone)
+        self.small_screen = small_screen
+        if not small_screen:
+            self.BORDER_TITLE = title(self.timezone)
         super().__init__()
 
     def on_click(self) -> None:
@@ -42,16 +54,30 @@ class TimeWidget(Widget):
         logger.debug(
             f"Clicked on TimeWidget, changing timezone from {self.timezone}")
         self.timezone = next(timezone_cycle)
-        self.border_title = title(self.timezone)
+        if not self.small_screen:
+            self.border_title = title(self.timezone)
         self.watch_time(self.time)
 
     def compose(self) -> ComposeResult:
-        with Center():
-            yield Label("Date", classes="center")
-            yield Digits("test", classes="center")
+        if self.small_screen:
+            # Minimal format for small screens
+            yield Static("Loading...", classes="center")
+        else:
+            # Regular format
+            with Center():
+                yield Label("Date", classes="center")
+                yield Digits("test", classes="center")
 
     def watch_time(self, time: datetime) -> None:
         localized_time = time.astimezone(timezone(self.timezone))
-        self.query_one(Digits).update(localized_time.strftime("%H:%M:%S"))
-        self.query_one(Label).update(
-            localized_time.strftime("%A, %d %B %Y"))
+
+        if self.small_screen:
+            # Minimal format: "HH:MM DD/MM" with flag
+            flag = get_flag(self.timezone)
+            minimal_time = localized_time.strftime("%H:%M %d/%m")
+            self.query_one(Static).update(f"{flag} {minimal_time}")
+        else:
+            # Regular format
+            self.query_one(Digits).update(localized_time.strftime("%H:%M:%S"))
+            self.query_one(Label).update(
+                localized_time.strftime("%A, %d %B %Y"))

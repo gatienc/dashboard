@@ -47,9 +47,10 @@ def todo_list_formatting(daily_todo: str) -> list[(str, int, bool)]:
 class DailyStats(Widget):
     """A widget to display the daily stats in a static format."""
 
-    def __init__(self, routine_dict: dict) -> None:
+    def __init__(self, routine_dict: dict, small_screen: bool = False) -> None:
         super().__init__()
         self.routine_dict = routine_dict
+        self.small_screen = small_screen
         self.text = self.get_text(routine_dict)
         self.border_title = "Daily Stats"
 
@@ -57,13 +58,24 @@ class DailyStats(Widget):
         logger.debug(routine_dict)
         if "error" in routine_dict:
             return "Error fetching data."
-        return (
-            f"Journal Wrote: {'✅' if routine_dict.get('journal_wrote', False) else '❌'}\n" +
-            f"Wake Early:    {'✅' if routine_dict.get('wake_early', False) else '❌'}\n" +
-            f"Trained:       {'✅' if routine_dict.get('trained', False) else '❌'}\n" +
-            f"Stretched:     {'✅' if routine_dict.get('stretched', False) else '❌'}\n" +
-            f"Anki:          {'✅' if routine_dict.get('anki', False) else '❌'}\n" +
-            f"City:          {routine_dict.get('city', 'Unknown')}")
+
+        if self.small_screen:
+            # Simplified format for small screens
+            return (
+                f"📝 {'✅' if routine_dict.get('journal_wrote', False) else '❌'}\n" +
+                f"🌅 {'✅' if routine_dict.get('wake_early', False) else '❌'}\n" +
+                f"💪 {'✅' if routine_dict.get('trained', False) else '❌'}\n" +
+                f"🧘 {'✅' if routine_dict.get('stretched', False) else '❌'}\n" +
+                f"🧠 {'✅' if routine_dict.get('anki', False) else '❌'}\n" +
+                f"🏙️  {routine_dict.get('city', 'Unknown')}")
+        else:
+            return (
+                f"Journal Wrote: {'✅' if routine_dict.get('journal_wrote', False) else '❌'}\n" +
+                f"Wake Early:    {'✅' if routine_dict.get('wake_early', False) else '❌'}\n" +
+                f"Trained:       {'✅' if routine_dict.get('trained', False) else '❌'}\n" +
+                f"Stretched:     {'✅' if routine_dict.get('stretched', False) else '❌'}\n" +
+                f"Anki:          {'✅' if routine_dict.get('anki', False) else '❌'}\n" +
+                f"City:          {routine_dict.get('city', 'Unknown')}")
 
     def update_data(self, routine_dict: str) -> None:
         self.routine_dict = routine_dict
@@ -76,12 +88,13 @@ class DailyStats(Widget):
 
 class DailyCalendar(Widget):
     """A widget to display a daily calendar with events.
-    TODO: add as a subtitle the current thing your supposed to do
+    TODO: add as a subtitle the current thing you're supposed to do
     """
 
-    def __init__(self, data: str = DEFAULT_CALENDAR) -> None:
+    def __init__(self, data: str = DEFAULT_CALENDAR, small_screen: bool = False) -> None:
         super().__init__()
         self.data = data
+        self.small_screen = small_screen
         self.border_title = "Daily Calendar"
 
     def compose(self) -> ComposeResult:
@@ -98,8 +111,9 @@ class ObsidianWidget(Widget):
 
     time: reactive[datetime] = reactive(datetime.now)
 
-    def __init__(self) -> None:
+    def __init__(self, small_screen: bool = False) -> None:
         self.BORDER_TITLE = "Obsidian Dashboard"
+        self.small_screen = small_screen
         self.data = self._get_data()
         self.uploading = False  # When data is being uploaded, no new data can be fetched
         super().__init__()
@@ -147,14 +161,14 @@ class ObsidianWidget(Widget):
 
     def compose(self) -> ComposeResult:
         if "error" in self.data:
-            yield DailyStats(routine_dict={"error": "Error fetching data."})
+            yield DailyStats(routine_dict={"error": "Error fetching data."}, small_screen=self.small_screen)
             yield SelectionList[int](("Error fetching daily todo list.", 0, False), id="daily_todo_list", compact=True)
-            yield DailyCalendar(data="Error fetching calendar data.")
+            yield DailyCalendar(data="Error fetching calendar data.", small_screen=self.small_screen)
             yield SelectionList[int](("Error fetching todo list.", 0, False), id="todo_list", compact=True)
         else:
-            yield DailyStats(routine_dict=self.data["routine"])
+            yield DailyStats(routine_dict=self.data["routine"], small_screen=self.small_screen)
             yield SelectionList[int](*todo_list_formatting(self.data["daily_todo"]), id="daily_todo_list", compact=True)
-            yield DailyCalendar(data=DEFAULT_CALENDAR)
+            yield DailyCalendar(data=DEFAULT_CALENDAR, small_screen=self.small_screen)
             yield SelectionList[int](*todo_list_formatting(self.data["todo"]), id="todo_list", compact=True)
 
     def _get_new_todo_list(self, id: str) -> str:
@@ -165,7 +179,9 @@ class ObsidianWidget(Widget):
             key = "daily_todo"
         elif id == "#todo_list":
             key = "todo"
-        # loop trough the todo list text and find the selected item
+        else:
+            key = "todo"  # Default fallback
+        # loop through the todo list text and find the selected item
         selection_list = todo_list_formatting(self.data[key])
         new_todo = self.data[key].splitlines()
         current_index = 0
